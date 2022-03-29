@@ -201,9 +201,9 @@ module Amiri
   # @return [nil]
   def help_cmd(input = 'default')
     amri = valid_commands.detect { |cmd| cmd.name_arr.include?(input) }
-    # macro = macros.detect {|macro| macro.key == m}
+    macro = macros.detect {|macro| macro.first == input}
     @prompt.say(amri.summary) if amri
-    # get_macro(macro) if macro
+    @prompt.warn "#{input} is a macro. Use get-macro to get further information." if macro
     @prompt.say('please enter a valid command name') if input != 'default' && amri.nil?
     commands = @style.cyan.on_white('commands')
     help_example = @style.red.on_white('help [command-name]')

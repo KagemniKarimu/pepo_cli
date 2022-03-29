@@ -158,7 +158,7 @@ puts Amri.new(
 
 # SET-MACRO // mkato
 puts Amri.new(
-  names: %w[set-macro mkato!],
+  names: %w[set-macro macro mkato!],
   descr: 'program a macro',
   example: 'macro [name-of-phrase]',
   action: $command_instance.method(:set_macro),
@@ -166,7 +166,7 @@ puts Amri.new(
 
 # LIST-MACROS // mikato
 puts Amri.new(
-  names: %w[list-macros ls-macro macro-list macros mikato],
+  names: %w[macros list-macros ls-macro macro-list mikato],
   descr: 'list all valid macros',
   example: 'macros',
   action: $command_instance.method(:list_macros)
@@ -174,10 +174,10 @@ puts Amri.new(
 
 # LOAD-MACRO //
 puts Amri.new(
-  names: %w[load-macro macro-file mkato-faili],
+  names: %w[load-macro pep-to-macro import import-macro pep2mkato],
   descr: 'loads a macro from a .pep file',
   example: 'macro [/absolute/path/to/file/]',
-  action: $command_instance.method(:load_macro_from_file)
+  action: $command_instance.method(:import_macro)
 )
 
 # GET-MACRO //
@@ -190,10 +190,19 @@ puts Amri.new(
 
 # EXPORT-MACRO
 puts Amri.new(
-  names: %w[export-macro mikato-faili],
+  names: %w[export-macro macro-to-pep export mkato2pep],
   descr: 'export any/all macros',
   example: 'export-macro [macro_name]',
   action: $command_instance.method(:export_macro)
+)
+
+# DELETE-MACRO //
+puts Amri.new(
+  names: %w[delete-macro macro-delete del-mac mkatokufa],
+  descr: 'removes a macro from memory',
+  example: 'delete-macro ',
+  action: $command_instance.method(:delete_macro)
+
 )
 
 # PING // gota
@@ -278,6 +287,6 @@ Amiri.configure
 puts 'loading test macro'
 # p Dir['C:\Users\Admin\RubymineProjects\pepo_cli\test_macros']
 # sleep 3
-$command_instance.load_macro_from_file'C:\Users\Admin\RubymineProjects\pepo_cli\test_macros\sifa.pep'
+$command_instance.import_macro'C:\Users\Admin\RubymineProjects\pepo_cli\test_macros\sifa.pep'
 puts 'starting program...'
 $command_instance.program_start

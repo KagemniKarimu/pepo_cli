@@ -34,6 +34,8 @@ require './api/filebase_helper'
 print '.'
 require './api/sia_stats_info'
 print '.'
+require 'dentaku'
+print '.'
 
 puts 'dependencies initialized!'
 
@@ -147,6 +149,8 @@ class PepoCommandLine
       if action.chars.first == '#'
         prompt.say("#{@cmd_cursor} #{@style.green(action)}")
         sound(:bump)
+      elsif macro?(action.split(" ").first)
+        process_macro(action)
       else
         process_command(action)
       end
@@ -169,6 +173,7 @@ class PepoCommandLine
 
   def ping(address)
     # HardCoded to do Only 4 Pings
+    return error 'unable to conduct ping from offline mode' unless internet_access?
     system "ping #{address}" if OS.windows?
     system "ping -c 4 #{address}" unless OS.windows?
   end
@@ -274,20 +279,6 @@ class PepoCommandLine
       amri = valid_commands.detect { |cmd| cmd.name_arr.include?(cmd_input) }
       amri.execute(*args_in)
       sound(:success)
-      # if !args_in.empty? && amri.args == args_in.count
-      #   amri.execute(*args_in)
-      #   sound(:success)
-      # elsif args_in.empty? && amri.args.zero?
-      #   amri.execute
-      #   sound(:success)
-      # elsif !args_in.empty? && !amri.args.positive?
-      #   @prompt.warn("Invalid number of arguments [expected #{amri.args}, given #{args_in.count}]")
-      #   amri.execute
-      # else
-      #   # @prompt.warn("Unexpected Command Format")
-      #   amri.execute(*args_in)
-      #   sound(:success)
-      # end
     elsif cmd_input.nil? || cmd_input.chars.first == '#'
       sound(:bump)
     else
@@ -322,17 +313,21 @@ class PepoCommandLine
     @prompt.ok(message) if message
   end
 
-  def set_macro(phrase)
+  def set_macro(phrase, *actions)
     overwrite = true
     return error "Reserved word, #{phrase}" if valid_command?(phrase)
 
     overwrite = @prompt.yes?("`#{phrase}` already exists. Do you want to overwrite `#{phrase}` ?") if macro?(phrase)
-    if overwrite
+    return unless overwrite
+
+    if actions.empty?
       macro_actions = @prompt.multiline(macro_instructions)
-      @macros[phrase] = macro_actions
+      @macros[phrase] = macro_actions; @prompt.say "Macro #{phrase} has been created."
+    elsif actions
+      macro_actions = actions.join(' ').split(';')
+      @macros[phrase] = macro_actions; @prompt.say "Macro #{phrase} has been created."
     end
-    # rescue ArgumentError
-    #   error 'please enter a word or phrase with no spaces'
+
   end
 
   def macro_instructions
@@ -370,12 +365,39 @@ Any previous instructions for a same-name macro will be overwritten instead of a
     main_menu
   end
 
-  def load_macro_from_file(file_path, overwrite: true)
-    return error 'invalid path, please use a valid file path' unless File.absolute_path?(file_path)
-    return error "cannot find file... #{file_path}" unless File.exist?(file_path)
+  def import_macro (file_path, permission=nil)
+    return error 'invalid path, please use an absolute file path' unless File.absolute_path?(file_path)
+    return error 'use ! as the final argument to grant permission' if permission&.is_a?(String) && permission != '!'
 
+    force = (permission == '!') if permission
+
+    case
+    when File.directory?(file_path)
+      return error 'unable to find directory' unless Dir.exist?(file_path)
+
+      pep_files = Dir.entries(file_path).select { _1.end_with?('.pep') }.map { "#{file_path}/#{_1}" }
+      unless force
+        permission = @prompt.yes? ("There are #{pep_files.length} macros in the given directory. Import all?")
+      end
+      pep_files.each { |file| load_macro_from_file(file,force) } if (force || permission)
+    when File.file?(file_path)
+      return error "cannot find file... #{file_path}" unless File.exist?(file_path)
+
+      permission = @prompt.yes? ("Are you sure you want to load this macro?") unless force
+      load_macro_from_file(file_path,force) if permission || force
+    else
+      error 'invalid path, unable to resolve file/directory'
+    end
+
+  end
+
+
+  def load_macro_from_file(file_path, force, overwrite: true)
     macro_name = File.basename(file_path, File.extname(file_path))
-    overwrite = @prompt.yes? 'macro already exists. would you like to overwrite?' if macro?(macro_name)
+
+    if macro?(macro_name) && !force
+      overwrite = @prompt.yes? "macro '#{macro_name}' already exists. would you like to overwrite?"
+    end
     return unless overwrite
 
     macro_actions = []
@@ -383,6 +405,9 @@ Any previous instructions for a same-name macro will be overwritten instead of a
       macro_actions << action
     end
     @macros[macro_name] = macro_actions
+    success "macro '#{macro_name}' successfully loaded into memory."
+  rescue Errno::ENOENT
+    error "unable to load macro from #{file_path}"
   end
 
   def list_macros
@@ -402,28 +427,54 @@ Any previous instructions for a same-name macro will be overwritten instead of a
       plain_line = broken_line.drop(1).join(' ')
       if valid_command?(first_word&.downcase)
         "#{@style.bright_white.italic(first_word)} #{plain_line}"
-      elsif macro?(first_word&.downcase)
-        "#{@style.bright_yellow.italic(first_word)} #{plain_line}"
+      elsif macro?(first_word)
+        "#{@style.bright_cyan.italic(first_word)} #{plain_line}"
       elsif first_word&.start_with?('#')
         @style.black.on_green(line)
-        # @style.bright_green(first_word) + broken_line.drop(1).join(' ')
       else
         @style.bright_red.strikethrough(line)
       end
     end
   end
 
-  def export_macro(*macros)
-    if macros && macros.length > 1
-      macros.select! {|macro| @macros[macro] } if macros.is_a? Array
-      if @prompt.yes?("There are #{macros.length} matching macros! Are you sure you want to write to file(s)?")
-        macros.each { |macro| error "unable to write #{macro}" unless File.write("#{macro}.pep", macros[macro]) > 0 }
+  def export_macro(write_path, *macros)
+    return error "invalid path: #{write_path}. Please specify a valid path." unless Dir.exist?(write_path)
+    
+    permission = macros.last == '!' ? true : nil
+    if macros&.length.positive? && !macros.all?{ _1 == '!' }
+      macros = @macros.select { macros.include?(_1) }
+      permission ||= @prompt.yes?("There are #{macros.length} matching macros! Are you sure you want to write to file(s)?")
+    else
+      macros = @macros
+      permission ||= @prompt.yes?("There are #{@style.blue.on_white(@macros.length)} loaded macros. Are you sure you want to write to #{@style.black.on_white(write_path)}?")
+    end
+
+    write_macros_to_file(macros, write_path) if permission
+  end
+
+  def write_macros_to_file(macros, write_path)
+    macros.each do |macro|
+      macro_name = macro[0]; macro_script = macro[1]
+      abs_write_path = File.join(write_path, "#{macro_name}.pep")
+      if File.write(abs_write_path, macro_script.join("\n")).positive?
+        success "Written #{macro_name}.pep to #{write_path}"
+      else
+        error "Unable to write #{macro_name}"
       end
-    elsif @prompt.yes?("There are #{@macros.length} loaded macros. Are you sure you want to write?")
-        @macros.each {|macro| p macro[1]; File.write("#{macro[0]}.pep", macro[1].join("\n")) }
-      end
+    end
+  rescue Errno::EACCES
+    @prompt.error "write permission to #{write_path} denied"
+  end
+
+  def delete_macro(macro, permission=false)
+    permission ||= @prompt.yes?("Are you sure you would like to delete #{macro}?")
+    return error 'use ! as the final argument to grant permission' if permission&.is_a?(String) && permission != '!'
+    return unless permission
+
+    @macros.delete(macro) ? success("#{macro} was deleted.") : error("unable to find #{macro} . macros are case-sensitive.")
   end
   end
+
 
 
 puts 'creating command instance...'
