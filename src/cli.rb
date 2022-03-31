@@ -321,10 +321,11 @@ class PepoCommandLine
   end
 
   def store(var_name, value)
-    return error 'please use non-numeric characters for your variable name' if Float(var_name) != nil
-    return error 'please enter a numerical value for your variable' unless Float(value) != nil
+    return error 'please use non-numeric characters for your variable name' if var_name.chars.all?{'1234567890-=+/.*'.include?(_1)}
+    return error 'please start all variable names with $' unless var_name.start_with?('$')
+    # return unless Float(value) != nil
 
-    variable =  @calc.store(var_name, value)
+    variable = @calc.store(var_name, value)
     variable ? @prompt.say(variable.memory) : @prompt.error('unable to create variable')
   end
 
