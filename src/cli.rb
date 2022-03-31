@@ -24,17 +24,17 @@ require 'rubygems/text'
 print '.'
 require 'soundplayer'
 print '.'
-require './os'
-print '.'
-require './cmd'
-print '.'
-require './amiri'
-print '.'
-require './api/filebase_helper'
-print '.'
-require './api/sia_stats_info'
-print '.'
 require 'dentaku'
+print '.'
+require_relative 'os'
+print '.'
+require_relative 'cmd'
+print '.'
+require_relative 'amiri'
+print '.'
+require '../api/filebase_helper'
+print '.'
+require '../api/sia_stats_info'
 print '.'
 
 puts 'dependencies initialized!'
@@ -65,7 +65,9 @@ class PepoCommandLine
     @sound = default_volume
     @valid_commands = []
     @macros = {}
+    @variables = {}
     @filebase_instances = []
+    @calc = Dentaku::Calculator.new
   end
 
   def default_cursor
@@ -159,9 +161,9 @@ class PepoCommandLine
 
   def sound(type)
     case type
-    when :start then Sound.play('snd/bump.wav', 2)
-    when :close then Sound.play('snd/exit.wav', 3) if sound?
-    else Sound.play("snd/#{type}.wav") if sound?
+    when :start then Sound.play('../snd/bump.wav', 2)
+    when :close then Sound.play('../snd/exit.wav', 3) if sound?
+    else Sound.play("../snd/#{type}.wav") if sound?
     end
   end
 
@@ -311,6 +313,19 @@ class PepoCommandLine
   def success(message = nil)
     sound(:success)
     @prompt.ok(message) if message
+  end
+
+  def calculate(*input)
+    calculation = @calc.evaluate(input.join(" "))
+    calculation ? @prompt.say(calculation) : @prompt.error('unable to evaluate given expressions')
+  end
+
+  def store(var_name, value)
+    return error 'please use non-numeric characters for your variable name' if Float(var_name) != nil
+    return error 'please enter a numerical value for your variable' unless Float(value) != nil
+
+    variable =  @calc.store(var_name, value)
+    variable ? @prompt.say(variable.memory) : @prompt.error('unable to create variable')
   end
 
   def set_macro(phrase, *actions)

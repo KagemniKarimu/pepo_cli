@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './cli'
+require_relative 'cli'
 
 # Amri is Kiswahili for 'Instruction/Order/Commmand' - each recognized command in Pepo has an Amri instance
 # those Amri instances live in the valid_commands array of $command_instance
@@ -48,6 +48,22 @@ puts Amri.new(
   descr: 'turn ON/OFF sound for pepo cli',
   example: 'sound',
   action: $command_instance.method(:adjust_sound)
+)
+
+# MATH // hesabu
+puts Amri.new(
+  names: %w[math ~ hesabu],
+  descr: 'calculate a given expression',
+  example: 'math 200 + 200',
+  action: $command_instance.method(:calculate)
+)
+
+# STORE // hifadhi
+puts Amri.new(
+  names: %w[store keep hifadhi],
+  descr: 'save a variable',
+  example: 'store [name] [value]',
+  action:$command_instance.method(:store)
 )
 
 # PAUSE // pumziko

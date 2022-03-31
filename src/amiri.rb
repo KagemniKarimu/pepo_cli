@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './cli'
+require_relative 'cli'
 ###########################################
 #
 ## Here are the hooks for various Amri
