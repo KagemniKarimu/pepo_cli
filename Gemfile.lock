@@ -1,0 +1,96 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    aws-eventstream (1.2.0)
+    aws-partitions (1.572.0)
+    aws-sdk-core (3.130.0)
+      aws-eventstream (~> 1, >= 1.0.2)
+      aws-partitions (~> 1, >= 1.525.0)
+      aws-sigv4 (~> 1.1)
+      jmespath (~> 1.0)
+    aws-sdk-kms (1.55.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-s3 (1.113.0)
+      aws-sdk-core (~> 3, >= 3.127.0)
+      aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.4)
+    aws-sigv4 (1.4.0)
+      aws-eventstream (~> 1, >= 1.0.2)
+    cgi (0.3.1)
+    concurrent-ruby (1.1.10)
+    dentaku (3.5.0)
+      concurrent-ruby
+    erb (2.2.3)
+      cgi
+    httparty (0.20.0)
+      mime-types (~> 3.0)
+      multi_xml (>= 0.5.2)
+    jmespath (1.6.1)
+    mime-types (3.4.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2022.0105)
+    multi_xml (0.6.0)
+    nokogiri (1.13.8)
+      racc (~> 1.4)
+    pastel (0.8.0)
+      tty-color (~> 0.5)
+    racc (1.6.0)
+    ruby-ogginfo (0.7.2)
+    ruby2d (0.11.3)
+    soundplayer (0.3.0)
+      ruby-ogginfo (~> 0.7, >= 0.7.2)
+      ruby2d (~> 0.9, >= 0.9.4)
+      wavefile (~> 1.1, >= 1.1.1)
+    strings (0.2.1)
+      strings-ansi (~> 0.2)
+      unicode-display_width (>= 1.5, < 3.0)
+      unicode_utils (~> 1.4)
+    strings-ansi (0.2.0)
+    tty-color (0.6.0)
+    tty-cursor (0.7.1)
+    tty-font (0.5.0)
+    tty-link (0.1.1)
+    tty-progressbar (0.18.2)
+      strings-ansi (~> 0.2)
+      tty-cursor (~> 0.7)
+      tty-screen (~> 0.8)
+      unicode-display_width (>= 1.6, < 3.0)
+    tty-prompt (0.23.1)
+      pastel (~> 0.8)
+      tty-reader (~> 0.8)
+    tty-reader (0.9.0)
+      tty-cursor (~> 0.7)
+      tty-screen (~> 0.8)
+      wisper (~> 2.0)
+    tty-screen (0.8.1)
+    tty-table (0.12.0)
+      pastel (~> 0.8)
+      strings (~> 0.2.0)
+      tty-screen (~> 0.8)
+    tty-tree (0.4.0)
+    unicode-display_width (2.1.0)
+    unicode_utils (1.4.0)
+    wavefile (1.1.1)
+    wisper (2.0.1)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  aws-sdk-s3
+  dentaku
+  erb
+  httparty
+  nokogiri
+  soundplayer
+  tty-font
+  tty-link
+  tty-progressbar
+  tty-prompt
+  tty-reader
+  tty-table
+  tty-tree
+
+BUNDLED WITH
+   2.3.22

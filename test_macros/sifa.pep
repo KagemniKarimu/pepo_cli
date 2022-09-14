@@ -8,5 +8,3 @@ anwani!
 sauti
 madokezo
 safisha
-
-nobody

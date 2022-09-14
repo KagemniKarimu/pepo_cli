@@ -285,8 +285,6 @@ puts 'all commands initalized...'
 puts 'configuring command controller...'
 Amiri.configure
 puts 'loading test macro'
-# p Dir['C:\Users\Admin\RubymineProjects\pepo_cli\test_macros']
-# sleep 3
-$command_instance.import_macro'C:\Users\Admin\RubymineProjects\pepo_cli\test_macros\sifa.pep'
+$command_instance.import_macro("#{Dir.pwd}/test_macros/sifa.pep", "!")
 puts 'starting program...'
 $command_instance.program_start
