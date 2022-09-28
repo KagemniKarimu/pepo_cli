@@ -1,6 +1,15 @@
 # pepo_cli
 
 [DEPRECATED- 9/7/22]
+ <video width="320" height="240" autoplay muted>
+  <source src="movie.mp4" type="video/mp4">
+  <source src="movie.ogg" type="video/ogg">
+Your browser does not support the video tag.
+</video> 
+
+
+https://user-images.githubusercontent.com/82295340/192896158-b4f7d374-95e5-4462-9e64-0af89f2972ac.mp4
+
 
 Pepo CLI is a highly featureful command line-environment designed for the Sia / Skynet ecosystem containing idiomatic Kiswahili macros. 
 As such it has the following features:
