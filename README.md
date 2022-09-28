@@ -1,11 +1,9 @@
 # pepo_cli
 
 [DEPRECATED- 9/7/22]
- <video width="320" height="240" autoplay muted>
-  <source src="movie.mp4" type="video/mp4">
-  <source src="movie.ogg" type="video/ogg">
-Your browser does not support the video tag.
-</video> 
+ <video autoplay muted>
+  <source src="https://kagemnikarimu.s3.filebase.com/2022-09-28 16-36-16-converted.mp4" type="video/mp4">
+ </video> 
 
 
 https://user-images.githubusercontent.com/82295340/192896158-b4f7d374-95e5-4462-9e64-0af89f2972ac.mp4
